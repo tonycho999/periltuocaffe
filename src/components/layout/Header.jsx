@@ -19,7 +19,7 @@ export default function Header() {
           <img 
             src="/images/logo.png" 
             alt="Per il tuo caffe Logo" 
-            style={{ height: '40px', objectFit: 'contain' }} 
+            style={{ height: '80px', objectFit: 'contain' }} 
             // 💡 로고 이미지가 없을 때를 대비한 대체 텍스트(alt) 속성입니다.
           />
         </Link>
