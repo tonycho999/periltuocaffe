@@ -1,19 +1,20 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore"; // 🔥 데이터베이스(Firestore) 기능 추가
 
-// 🔥 여기에 Firebase 콘솔에서 발급받은 실제 정보를 넣어야 합니다.
-// 지금은 빈 틀만 만들어 두었습니다.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA2B6acr6KJfi05N_BDFX9IxPJ4QrZA3LA",
+  authDomain: "per-il-tuo-caffe.firebaseapp.com",
+  projectId: "per-il-tuo-caffe",
+  storageBucket: "per-il-tuo-caffe.firebasestorage.app",
+  messagingSenderId: "33301372146",
+  appId: "1:33301372146:web:9347033fbb4b17d93bc46b",
+  measurementId: "G-68Q8GR2VXR"
 };
 
-// Firebase 초기화
+// Firebase 및 애널리틱스 초기화
 const app = initializeApp(firebaseConfig);
+export const analytics = getAnalytics(app);
 
-// Firestore(데이터베이스) 내보내기 (다른 파일에서 db로 불러와서 사용)
+// 다른 파일들(ProductAdd, Consumer 등)에서 쓸 수 있도록 db 내보내기
 export const db = getFirestore(app);
