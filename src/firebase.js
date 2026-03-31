@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore"; // 🔥 데이터베이스(Firestore) 기능 추가
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth"; // ✨ 인증 기능 추가
 
 const firebaseConfig = {
   apiKey: "AIzaSyA2B6acr6KJfi05N_BDFX9IxPJ4QrZA3LA",
@@ -12,9 +13,7 @@ const firebaseConfig = {
   measurementId: "G-68Q8GR2VXR"
 };
 
-// Firebase 및 애널리틱스 초기화
 const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);
-
-// 다른 파일들(ProductAdd, Consumer 등)에서 쓸 수 있도록 db 내보내기
 export const db = getFirestore(app);
+export const auth = getAuth(app); // ✨ 다른 파일에서 쓸 수 있게 내보내기
