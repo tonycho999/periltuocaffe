@@ -14,7 +14,7 @@ export default function Header() {
           <img 
             src="/images/logo.png" 
             alt="Per il tuo caffe Logo" 
-            style={{ height: '40px', objectFit: 'contain' }} 
+            style={{ height: '80px', objectFit: 'contain' }} 
           />
         </Link>
       </div>
