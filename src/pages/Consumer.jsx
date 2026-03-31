@@ -19,10 +19,11 @@ export default function Consumer() {
         const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         // 메모리 상에서 최신순 정렬 (Firestore 복합 인덱스 오류 방지)
+        // Sort by newest in memory to prevent Firestore composite index errors
         data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setProducts(data);
       } catch (error) {
-        console.error("데이터 불러오기 에러:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -35,12 +36,12 @@ export default function Consumer() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <main style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', flexGrow: 1, width: '100%', boxSizing: 'border-box' }}>
         <h2 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '10px' }}>Consumer</h2>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '50px' }}>홈카페를 위한 프리미엄 원두와 커피 용품</p>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: '50px' }}>Premium coffee beans and equipment for your home cafe</p>
 
         {loading ? (
-          <p style={{ textAlign: 'center' }}>제품을 불러오는 중입니다...</p>
+          <p style={{ textAlign: 'center' }}>Loading products...</p>
         ) : products.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#999' }}>등록된 제품이 없습니다.</p>
+          <p style={{ textAlign: 'center', color: '#999' }}>No products available.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '30px' }}>
             {products.map(product => (
