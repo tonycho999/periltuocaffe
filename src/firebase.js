@@ -1,10 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // ✨ 인증 기능 추가
+import { getAuth } from "firebase/auth"; 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA2B6acr6KJfi05N_BDFX9IxPJ4QrZA3LA",
+  // 🔥 하드코딩된 키를 지우고, 숨겨둔 환경 변수를 불러옵니다.
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "per-il-tuo-caffe.firebaseapp.com",
   projectId: "per-il-tuo-caffe",
   storageBucket: "per-il-tuo-caffe.firebasestorage.app",
@@ -16,4 +17,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);
 export const db = getFirestore(app);
-export const auth = getAuth(app); // ✨ 다른 파일에서 쓸 수 있게 내보내기
+export const auth = getAuth(app);
