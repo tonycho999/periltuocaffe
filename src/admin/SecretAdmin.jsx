@@ -1,21 +1,35 @@
 import { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth'; 
+import { auth } from '../firebase'; 
 import ProductAdd from './ProductAdd';
 import ProductList from './ProductList';
 
 export default function SecretAdmin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // 🔒 설정된 비밀번호
-  const SECRET_PIN = '1234';
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (pin === SECRET_PIN) {
-      setIsAuthenticated(true);
-    } else {
+    
+    // 1단계: 화면상의 핀번호 확인 (사장님이 입력하실 PIN 번호 - 기존 1234)
+    if (pin !== '1234') {
       alert('비밀번호가 틀렸습니다.');
       setPin('');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 2단계: 백그라운드에서 Firebase 실제 계정으로 자동 로그인
+      // ✨ 비밀번호가 202604로 변경되었습니다!
+      await signInWithEmailAndPassword(auth, 'a@a.com', '202604');
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("로그인 에러:", error);
+      alert('관리자 인증에 실패했습니다. Firebase에 계정이 등록되어 있는지 확인해주세요.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -28,10 +42,12 @@ export default function SecretAdmin() {
             type="password"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
-            placeholder="비밀번호 입력"
+            placeholder="PIN 입력"
             style={{ padding: '10px', fontSize: '16px' }}
           />
-          <button type="submit" style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>접속</button>
+          <button type="submit" disabled={loading} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
+            {loading ? '인증 중...' : '접속'}
+          </button>
         </form>
       </div>
     );
