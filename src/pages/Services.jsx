@@ -7,16 +7,16 @@ export default function Services() {
         <h2 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '40px' }}>Our Services</h2>
         
         <div style={{ marginBottom: '40px' }}>
-          <h3 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>🔧 머신 설치 및 캘리브레이션</h3>
-          <p style={{ lineHeight: '1.6', color: '#555' }}>
-            새로운 머신 도입 시 전문가가 직접 방문하여 설치부터 최적의 커피 맛을 내기 위한 수온, 압력 캘리브레이션까지 완벽하게 세팅해 드립니다.
+          <h3 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>🔧 Machine Installation & Calibration</h3>
+          <p style={{ lineHeight: '1.6', color: '#555', marginTop: '10px' }}>
+            When introducing a new machine, our experts visit directly to provide perfect setup from installation to water temperature and pressure calibration for the optimal coffee taste.
           </p>
         </div>
 
         <div style={{ marginBottom: '40px' }}>
-          <h3 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>⚙️ 정기 유지보수 및 AS</h3>
-          <p style={{ lineHeight: '1.6', color: '#555' }}>
-            카페 운영에 차질이 없도록 신속한 출장 수리 및 소모품 교체, 스케일링 등 정기적인 머신 관리 솔루션을 제공합니다.
+          <h3 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>⚙️ Regular Maintenance & Support</h3>
+          <p style={{ lineHeight: '1.6', color: '#555', marginTop: '10px' }}>
+            We provide prompt on-site repairs, parts replacement, and scaling solutions to ensure your cafe operations run smoothly without interruption.
           </p>
         </div>
       </main>
