@@ -13,19 +13,32 @@ const CATEGORIES = [
 ];
 
 export default function Product() {
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  // ✨ 1. 헤더가 미리 저장한 제품 데이터를 가져옵니다.
+  const cachedProductsStr = sessionStorage.getItem('products_cache');
+  const initialProducts = cachedProductsStr ? JSON.parse(cachedProductsStr) : [];
+
+  // ✨ 2. 캐시 데이터가 있으면 바로 초기값으로 사용!
+  const [products, setProducts] = useState(initialProducts);
+  const [filteredProducts, setFilteredProducts] = useState(initialProducts);
   const [activeCat, setActiveCat] = useState('all');
-  const [loading, setLoading] = useState(true);
+  
+  // 캐시가 있으면 로딩 화면을 안 띄웁니다.
+  const [loading, setLoading] = useState(!cachedProductsStr);
   const navigate = useNavigate();
 
+  // ✨ 3. 조용히 최신 데이터를 확인해서 다르면 업데이트합니다.
   useEffect(() => {
     async function fetchProducts() {
       try {
         const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/products');
         const data = await response.json();
-        setProducts(data);
-        setFilteredProducts(data);
+        const newDataStr = JSON.stringify(data);
+        
+        // 캐시된 데이터와 DB 최신 데이터가 다를 때만 화면 갱신
+        if (newDataStr !== cachedProductsStr) {
+          setProducts(data);
+          sessionStorage.setItem('products_cache', newDataStr);
+        }
       } catch (error) {
         console.error("Failed to load products:", error);
       } finally {
@@ -33,8 +46,10 @@ export default function Product() {
       }
     }
     fetchProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 카테고리 필터링 로직
   useEffect(() => {
     if (activeCat === 'all') {
       setFilteredProducts(products);
@@ -46,7 +61,7 @@ export default function Product() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#fff' }}>
       
-      {/* 🖼️ 상단 히어로 섹션 (배경 이미지 적용) */}
+      {/* 🖼️ 상단 히어로 섹션 */}
       <section style={{
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/periltuocaffe.png')`,
         backgroundSize: 'cover',
@@ -70,27 +85,18 @@ export default function Product() {
 
       <main style={{ flex: '1', maxWidth: '1200px', margin: '0 auto', padding: '60px 20px', width: '100%', boxSizing: 'border-box' }}>
         
-        {/* 🔘 카테고리 필터 (선택 시 색상 변경) */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: '10px',
-          marginBottom: '60px', 
-          flexWrap: 'wrap' 
-        }}>
+        {/* 🔘 카테고리 필터 */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '60px', flexWrap: 'wrap' }}>
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => setActiveCat(cat.id)}
               style={{
-                padding: '12px 24px',
-                borderRadius: '30px',
+                padding: '12px 24px', borderRadius: '30px',
                 border: activeCat === cat.id ? 'none' : '1px solid #ddd',
-                backgroundColor: activeCat === cat.id ? '#000' : '#fff', // 선택 시 검정, 미선택 시 흰색
-                color: activeCat === cat.id ? '#fff' : '#555',           // 선택 시 흰색, 미선택 시 회색
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
+                backgroundColor: activeCat === cat.id ? '#000' : '#fff', 
+                color: activeCat === cat.id ? '#fff' : '#555',           
+                cursor: 'pointer', fontSize: '14px', fontWeight: '600',
                 transition: 'all 0.3s ease',
                 boxShadow: activeCat === cat.id ? '0 4px 10px rgba(0,0,0,0.2)' : 'none'
               }}
@@ -103,35 +109,14 @@ export default function Product() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '100px', fontSize: '18px', color: '#888' }}>Loading products...</div>
         ) : (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-            gap: '50px 30px' 
-          }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '50px 30px' }}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map(product => (
-                <div 
-                  key={product.id} 
-                  onClick={() => navigate(`/product/${product.id}`)}
-                  style={{ textAlign: 'center', cursor: 'pointer', group: 'true' }}
-                >
-                  <div style={{ 
-                    border: '1px solid #f0f0f0', 
-                    marginBottom: '20px', 
-                    overflow: 'hidden',
-                    backgroundColor: '#fdfdfd',
-                    borderRadius: '8px'
-                  }}>
+                <div key={product.id} onClick={() => navigate(`/product/${product.id}`)} style={{ textAlign: 'center', cursor: 'pointer', group: 'true' }}>
+                  <div style={{ border: '1px solid #f0f0f0', marginBottom: '20px', overflow: 'hidden', backgroundColor: '#fdfdfd', borderRadius: '8px' }}>
                     <img 
-                      src={product.image_url} 
-                      alt={product.name} 
-                      style={{ 
-                        width: '100%', 
-                        height: '320px', 
-                        objectFit: 'contain', 
-                        transition: 'transform 0.5s ease',
-                        padding: '20px'
-                      }} 
+                      src={product.image_url} alt={product.name} 
+                      style={{ width: '100%', height: '320px', objectFit: 'contain', transition: 'transform 0.5s ease', padding: '20px' }} 
                       onMouseOver={e => e.currentTarget.style.transform = 'scale(1.08)'}
                       onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                     />
