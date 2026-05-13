@@ -11,12 +11,16 @@ export default function About() {
         const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/settings');
         const config = await response.json();
         
+        // 데이터가 있을 경우 처리
         if (config && config.about_data) {
-          setContent(config.about_data.content);
+          // 관리자 페이지 저장 방식에 따라 데이터가 객체일 수도, 문자열일 수도 있음
+          const rawData = config.about_data;
+          const finalHtml = typeof rawData === 'object' ? rawData.content : rawData;
+          setContent(finalHtml);
         }
       } catch (error) {
         console.error("Failed to load About Us data:", error);
-        setContent("Information not found.");
+        setContent("<p style='color:red;'>데이터를 불러오는 중 오류가 발생했습니다.</p>");
       } finally {
         setLoading(false);
       }
@@ -25,52 +29,47 @@ export default function About() {
   }, []);
 
   return (
-    /* 🛠️ 푸터 고정을 위한 레이아웃: 화면 전체 높이를 확보합니다. */
     <div style={{ 
       display: 'flex', 
       flexDirection: 'column', 
       minHeight: '100vh' 
     }}>
-      
-      {/* 🛠️ 본문 영역: flex: 1을 주어 내용이 적어도 푸터를 바닥으로 밀어냅니다. */}
       <main style={{ 
         flex: '1', 
         padding: '80px 20px', 
-        maxWidth: '1000px', 
+        maxWidth: '900px', 
         margin: '0 auto',
         width: '100%',
         boxSizing: 'border-box'
       }}>
-        {/* Title */}
         <h2 style={{ 
-          fontSize: '36px', 
+          fontSize: '32px', 
           fontWeight: 'bold', 
-          marginBottom: '50px', 
+          marginBottom: '60px', 
           textAlign: 'center',
           textTransform: 'uppercase',
-          letterSpacing: '2px'
+          letterSpacing: '3px'
         }}>
           About Us
         </h2>
 
         {loading ? (
-          <div style={{ textAlign: 'center', marginTop: '50px', color: '#888' }}>Loading...</div>
+          <div style={{ textAlign: 'center', color: '#999' }}>Loading...</div>
         ) : (
           <div 
+            className="about-content-area"
             style={{ 
-              lineHeight: '2.2', 
-              fontSize: '18px', 
-              color: '#333',
-              whiteSpace: 'pre-wrap', // 관리자에서 입력한 줄바꿈 유지
-              textAlign: 'center'    // 브랜드 이미지에 맞춰 중앙 정렬 추천
+              lineHeight: '1.8', 
+              fontSize: '17px', 
+              color: '#444',
+              textAlign: 'center'
             }}
-            // dangerouslySetInnerHTML을 사용하여 관리자 페이지에서 넣은 HTML 태그를 해석합니다.
+            /* ⭐ 중요: dangerouslySetInnerHTML를 사용해야 HTML 태그가 작동합니다. */
             dangerouslySetInnerHTML={{ __html: content }} 
           />
         )}
       </main>
 
-      {/* 이제 본문이 비어있어도 푸터는 무조건 화면 맨 아래에 위치합니다. */}
       <Footer />
     </div>
   );
