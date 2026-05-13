@@ -3,7 +3,6 @@ import Footer from '../components/layout/Footer';
 
 const CATEGORIES = [
   { id: 'all', name: 'All' },
-  { id: 'brand', name: 'By Brand' },
   { id: 'semi-auto', name: 'Semi-Auto Machines' },
   { id: 'manual', name: 'Manual Machines' },
   { id: 'auto', name: 'Fully Auto Machines' },
