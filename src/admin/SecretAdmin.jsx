@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import ProductAdd from './ProductAdd';
 import ProductList from './ProductList';
+import Setting from './Setting'; // 세팅 컴포넌트 임포트
 
 export default function SecretAdmin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
+  const [activeTab, setActiveTab] = useState('products'); // 'products' 또는 'settings'
 
   const handleLogin = (e) => {
     e.preventDefault();
-    
-    // 핀번호 확인 (사장님 전용 PIN)
-    if (pin === '1234') { // 원하시는 번호로 수정 가능
+    if (pin === '1234') {
       setIsAuthenticated(true);
     } else {
-      alert('비밀번호가 틀렸습니다.');
+      alert('Wrong PIN number.');
       setPin('');
     }
   };
@@ -21,40 +21,63 @@ export default function SecretAdmin() {
   if (!isAuthenticated) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '100px' }}>
-        <h2>☕ Per il tuo caffe 관리자 접속</h2>
+        <h2>Admin Access</h2>
         <form onSubmit={handleLogin} style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
           <input
             type="password"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
-            placeholder="PIN 입력"
-            style={{ padding: '10px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc' }}
+            placeholder="Enter PIN"
+            style={{ padding: '10px', fontSize: '16px' }}
           />
-          <button type="submit" style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }}>
-            접속
-          </button>
+          <button type="submit" style={{ padding: '10px 20px', cursor: 'pointer' }}>Login</button>
         </form>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ color: '#333' }}>✅ 제품 관리 대시보드</h2>
-        <button onClick={() => setIsAuthenticated(false)} style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#eee', border: '1px solid #ccc' }}>로그아웃</button>
+    <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h2>Dashboard</h2>
+        <button onClick={() => setIsAuthenticated(false)}>Logout</button>
       </div>
-      <p style={{ color: '#666', marginBottom: '40px' }}>
-        제품 정보를 관리합니다. (사진은 Cloudflare R2에 저장됩니다)
-      </p>
+
+      {/* 탭 메뉴: 여기서 제품 관리와 사이트 설정을 전환합니다 */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: '2px solid #eee' }}>
+        <button 
+          onClick={() => setActiveTab('products')}
+          style={{ ...tabStyle, borderBottom: activeTab === 'products' ? '3px solid #000' : 'none' }}
+        >
+          Product Management
+        </button>
+        <button 
+          onClick={() => setActiveTab('settings')}
+          style={{ ...tabStyle, borderBottom: activeTab === 'settings' ? '3px solid #000' : 'none' }}
+        >
+          Site Settings (Home/About)
+        </button>
+      </div>
       
-      {/* 제품 추가 폼 */}
-      <ProductAdd />
-      
-      <hr style={{ margin: '40px 0', border: '0', borderTop: '1px solid #eee' }} />
-      
-      {/* 등록된 제품 목록 */}
-      <ProductList />
+      {/* 탭 내용 출력 */}
+      {activeTab === 'products' ? (
+        <>
+          <ProductAdd />
+          <hr style={{ margin: '40px 0', opacity: 0.2 }} />
+          <ProductList />
+        </>
+      ) : (
+        <Setting />
+      )}
     </div>
   );
 }
+
+const tabStyle = {
+  padding: '10px 20px',
+  cursor: 'pointer',
+  backgroundColor: 'transparent',
+  border: 'none',
+  fontSize: '16px',
+  fontWeight: 'bold'
+};
