@@ -2,24 +2,26 @@ import { useState, useEffect } from 'react';
 
 export default function Setting() {
   const [activeTab, setActiveTab] = useState('home'); // 'home', 'about', 'services'
-  const [home, setHome] = useState({ title: '', subtitle: '', hero_img: '' });
+  const [home, setHome] = useState({ content: '' }); // 일괄 수정을 위해 객체 구조 변경
   const [about, setAbout] = useState({ content: '' });
   const [services, setServices] = useState({ content: '' });
   
-  const [uploadedImages, setUploadedImages] = useState([]); // 업로드된 이미지 목록
+  const [uploadedImages, setUploadedImages] = useState([]); 
   const [loading, setLoading] = useState(false);
 
+  // 1. 데이터 불러오기
   useEffect(() => {
     fetch('https://periltuocaffe-api.tonycho999.workers.dev/settings')
       .then(res => res.json())
       .then(data => {
-        if (data.home_data) setHome(data.home_data);
+        // 기존에 title/subtitle로 저장된 데이터가 있어도 content로 안전하게 변환하여 가져옵니다.
+        if (data.home_data) setHome(typeof data.home_data === 'object' && data.home_data.content ? data.home_data : { content: '' });
         if (data.about_data) setAbout(data.about_data);
         if (data.service_data) setServices(data.service_data);
       });
   }, []);
 
-  // 📸 이미지 업로드 처리 (R2 저장)
+  // 📸 이미지 업로드 처리 (Worker의 /upload 경로 사용)
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -29,16 +31,17 @@ export default function Setting() {
     formData.append('image', file);
 
     try {
-      const res = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/', {
+      // ✨ 중요: 경로를 /upload로 변경하여 단독 업로드 처리
+      const res = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/upload', {
         method: 'POST',
         body: formData,
       });
       const result = await res.json();
       
       if (result.success) {
-        // 이미지 URL 생성 (Worker 도메인 기준)
         const imageUrl = `https://periltuocaffe-api.tonycho999.workers.dev/images/${result.fileName}`;
-        setUploadedImages(prev => [...prev, imageUrl]);
+        // 최신 이미지가 위로 오도록 추가
+        setUploadedImages(prev => [imageUrl, ...prev]);
       }
     } catch (err) {
       alert("Upload failed.");
@@ -47,13 +50,11 @@ export default function Setting() {
     }
   };
 
-  // 📋 URL 복사 함수
   const copyToClipboard = (url) => {
     navigator.clipboard.writeText(url);
-    alert("URL copied to clipboard!");
+    alert("URL copied!");
   };
 
-  // 💾 설정 저장 함수
   const saveSetting = async (key, value) => {
     setLoading(true);
     await fetch('https://periltuocaffe-api.tonycho999.workers.dev/settings', {
@@ -62,8 +63,12 @@ export default function Setting() {
       body: JSON.stringify({ key, value })
     });
     setLoading(false);
-    alert('Settings saved successfully!');
+    alert(`${key.replace('_data', '').toUpperCase()} Settings saved!`);
   };
+
+  // 현재 활성화된 탭의 데이터와 상태 변경 함수 결정
+  const currentData = activeTab === 'home' ? home : activeTab === 'about' ? about : services;
+  const setCurrentData = activeTab === 'home' ? setHome : activeTab === 'about' ? setAbout : setServices;
 
   return (
     <div style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px' }}>
@@ -86,55 +91,43 @@ export default function Setting() {
       </div>
 
       <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
-        {/* 왼쪽: 내용 입력 영역 */}
+        {/* 왼쪽: HTML 일괄 편집 영역 */}
         <div style={{ flex: '1.5', minWidth: '400px' }}>
-          {activeTab === 'home' && (
-            <div>
-              <h3>Home Screen Settings</h3>
-              <input type="text" value={home.title} onChange={e => setHome({...home, title: e.target.value})} placeholder="Main Title" style={inputStyle} />
-              <input type="text" value={home.subtitle} onChange={e => setHome({...home, subtitle: e.target.value})} placeholder="Subtitle" style={inputStyle} />
-              <input type="text" value={home.hero_img} onChange={e => setHome({...home, hero_img: e.target.value})} placeholder="Hero Image URL (Copy from right)" style={inputStyle} />
-              <button onClick={() => saveSetting('home_data', home)} style={saveBtnStyle}>Save Home Settings</button>
-            </div>
-          )}
-
-          {activeTab === 'about' && (
-            <div>
-              <h3>About Us Settings (HTML)</h3>
-              <textarea rows="15" value={about.content} onChange={e => setAbout({content: e.target.value})} style={inputStyle} placeholder="Enter HTML content..." />
-              <button onClick={() => saveSetting('about_data', about)} style={saveBtnStyle}>Save About Us</button>
-            </div>
-          )}
-
-          {activeTab === 'services' && (
-            <div>
-              <h3>Services Settings (HTML)</h3>
-              <textarea rows="15" value={services.content} onChange={e => setServices({content: e.target.value})} style={inputStyle} placeholder="Enter HTML content..." />
-              <button onClick={() => saveSetting('service_data', services)} style={saveBtnStyle}>Save Services Settings</button>
-            </div>
-          )}
+          <h3>{activeTab.toUpperCase()} Content (HTML)</h3>
+          <p style={{ fontSize: '13px', color: '#666', marginBottom: '10px' }}>
+            Enter your HTML code here. Use images by copying URLs from the gallery on the right.
+          </p>
+          <textarea 
+            rows="20" 
+            value={currentData.content} 
+            onChange={e => setCurrentData({ content: e.target.value })} 
+            style={inputStyle} 
+            placeholder={`Enter HTML for your ${activeTab} page...`} 
+          />
+          <button onClick={() => saveSetting(`${activeTab}_data`, currentData)} style={saveBtnStyle}>
+            Save {activeTab.toUpperCase()} Settings
+          </button>
         </div>
 
-        {/* 오른쪽: 이미지 업로드 및 URL 복사 영역 */}
-        <div style={{ flex: '1', minWidth: '300px', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+        {/* 오른쪽: 이미지 갤러리 */}
+        <div style={{ flex: '1', minWidth: '300px', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', maxHeight: '80vh', overflowY: 'auto' }}>
           <h3 style={{ marginTop: 0 }}>🖼️ Image Gallery</h3>
-          <p style={{ fontSize: '12px', color: '#666' }}>Upload images to use in your content.</p>
           
           <div style={{ marginBottom: '20px' }}>
             <input type="file" id="file-upload" onChange={handleImageUpload} style={{ display: 'none' }} />
             <label htmlFor="file-upload" style={uploadBtnStyle}>
-              {loading ? 'Uploading...' : '+ Upload New Image'}
+              {loading ? 'Processing...' : '+ Upload Image'}
             </label>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {uploadedImages.map((url, index) => (
-              <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#fff', padding: '10px', border: '1px solid #eee' }}>
-                <img src={url} style={{ width: '50px', height: '50px', objectFit: 'cover' }} alt="uploaded" />
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <p style={{ fontSize: '10px', margin: 0, textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>{url}</p>
+              <div key={index} style={{ backgroundColor: '#fff', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
+                <img src={url} style={{ width: '100%', height: '120px', objectFit: 'contain', marginBottom: '10px', background: '#f0f0f0' }} alt="preview" />
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  <input readOnly value={url} style={{ flex: 1, fontSize: '10px', padding: '5px' }} />
+                  <button onClick={() => copyToClipboard(url)} style={copyBtnStyle}>Copy</button>
                 </div>
-                <button onClick={() => copyToClipboard(url)} style={copyBtnStyle}>Copy</button>
               </div>
             ))}
           </div>
@@ -144,8 +137,7 @@ export default function Setting() {
   );
 }
 
-// 스타일 정의
-const inputStyle = { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box', fontSize: '14px' };
-const saveBtnStyle = { padding: '12px 24px', backgroundColor: '#000', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', width: '100%' };
-const uploadBtnStyle = { display: 'block', padding: '10px', backgroundColor: '#eee', textAlign: 'center', cursor: 'pointer', border: '1px dashed #aaa', fontWeight: 'bold' };
-const copyBtnStyle = { padding: '5px 10px', backgroundColor: '#333', color: '#fff', border: 'none', fontSize: '11px', cursor: 'pointer' };
+const inputStyle = { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box', fontSize: '14px', fontFamily: 'monospace' };
+const saveBtnStyle = { padding: '15px 24px', backgroundColor: '#000', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '16px' };
+const uploadBtnStyle = { display: 'block', padding: '15px', backgroundColor: '#fff', textAlign: 'center', cursor: 'pointer', border: '2px dashed #ccc', fontWeight: 'bold', borderRadius: '4px' };
+const copyBtnStyle = { padding: '5px 12px', backgroundColor: '#333', color: '#fff', border: 'none', fontSize: '12px', cursor: 'pointer', borderRadius: '3px' };
