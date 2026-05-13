@@ -43,11 +43,16 @@ export default function ProductAdd() {
         body: formData, 
       });
       const result = await response.json();
+      
       if (response.ok && result.success) {
         alert('✅ 제품이 성공적으로 등록되었습니다!');
+        
+        // 폼 비우기
         setName(''); setCategory('semi-auto'); setDescription('');
         setImageFile(null); setPreviewUrl(''); e.target.reset(); 
-        window.location.reload();
+        
+        // ✨ 화면 새로고침 대신, 리스트 쪽에 업데이트하라는 신호만 보냅니다!
+        window.dispatchEvent(new Event('productAdded'));
       } else {
         throw new Error(result.error || '서버 응답 오류');
       }
