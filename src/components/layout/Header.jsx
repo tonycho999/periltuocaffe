@@ -20,8 +20,9 @@ export default function Header() {
       </div>
 
       <nav className="header-nav">
-        <Link to="/consumer" className="nav-link">Consumer</Link>
-        <Link to="/commercial" className="nav-link">Commercial</Link>
+        {/* 수정된 메뉴 구성 */}
+        <Link to="/about" className="nav-link">About Us</Link>
+        <Link to="/product" className="nav-link">Product</Link>
         <Link to="/services" className="nav-link">Services</Link>
         <Link to="/contact" className="nav-link">Contact</Link>
       </nav>
