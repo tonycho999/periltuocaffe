@@ -4,13 +4,12 @@ export default function ProductList() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ☁️ 1. 제품 목록 불러오기
+  // ☁️ 제품 목록 불러오기
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/products');
       if (!response.ok) throw new Error('목록을 불러오는데 실패했습니다.');
-      
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -21,21 +20,29 @@ export default function ProductList() {
   };
 
   useEffect(() => {
+    // 1. 처음 화면 뜰 때 불러오기
     fetchProducts();
+
+    // ✨ 2. 위쪽 등록 폼에서 '제품 추가 완료!' 신호가 오면 몰래 리스트 새로고침
+    const handleProductAdded = () => {
+      fetchProducts();
+    };
+    window.addEventListener('productAdded', handleProductAdded);
+
+    // 컴포넌트 닫힐 때 이벤트 정리
+    return () => window.removeEventListener('productAdded', handleProductAdded);
   }, []);
 
-  // 🗑️ 2. 제품 완벽 삭제 (DB + 이미지 모두 삭제)
+  // 🗑️ 제품 완벽 삭제
   const handleDelete = async (product) => {
     if (!window.confirm(`[${product.name}] 제품을 정말 삭제하시겠습니까?\n서버의 이미지 파일도 함께 삭제됩니다.`)) return;
     
     try {
-      // 1) DB에서 제품 정보 삭제
       const response = await fetch(`https://periltuocaffe-api.tonycho999.workers.dev/products/${product.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        // 2) R2 서버에서 썸네일 이미지 파일도 깔끔하게 삭제
         try {
           if (product.image_url) {
             const fileName = product.image_url.split('/').pop();
@@ -48,9 +55,7 @@ export default function ProductList() {
         }
 
         alert('🗑️ 제품이 완벽하게 삭제되었습니다.');
-        fetchProducts(); // 목록 새로고침
-        
-        // 홈페이지 측 캐시(sessionStorage)도 지워야 즉시 반영됨
+        fetchProducts(); // 리스트 갱신
         sessionStorage.removeItem('all_data_cached');
         sessionStorage.removeItem('products_cache');
       } else {
