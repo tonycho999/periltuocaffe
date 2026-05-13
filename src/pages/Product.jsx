@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 상세 이동을 위해 추가
+import { useNavigate } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 
 const CATEGORIES = [
@@ -17,7 +17,7 @@ export default function Product() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeCat, setActiveCat] = useState('all');
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // 이동 함수 생성
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -44,23 +44,55 @@ export default function Product() {
   }, [activeCat, products]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <main style={{ flex: '1', maxWidth: '1200px', margin: '0 auto', padding: '60px 20px', width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>Our Products</h2>
-          <p style={{ color: '#666', marginTop: '10px' }}>Premium lineup for your coffee business.</p>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#fff' }}>
+      
+      {/* 🖼️ 상단 히어로 섹션 (배경 이미지 적용) */}
+      <section style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/periltuocaffe.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        height: '45vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: '#fff',
+        textAlign: 'center',
+        padding: '0 20px'
+      }}>
+        <h1 style={{ fontSize: '48px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '15px' }}>
+          Our Products
+        </h1>
+        <p style={{ fontSize: '18px', fontWeight: '300', letterSpacing: '1px' }}>
+          Premium lineup for your coffee business.
+        </p>
+      </section>
 
-        <div style={{ display: 'flex', justifyContent: 'center', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', marginBottom: '40px', flexWrap: 'wrap' }}>
+      <main style={{ flex: '1', maxWidth: '1200px', margin: '0 auto', padding: '60px 20px', width: '100%', boxSizing: 'border-box' }}>
+        
+        {/* 🔘 카테고리 필터 (선택 시 색상 변경) */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '10px',
+          marginBottom: '60px', 
+          flexWrap: 'wrap' 
+        }}>
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => setActiveCat(cat.id)}
               style={{
-                padding: '15px 25px', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontSize: '14px',
-                fontWeight: activeCat === cat.id ? 'bold' : 'normal',
-                color: activeCat === cat.id ? '#000' : '#888',
-                borderBottom: activeCat === cat.id ? '2px solid #000' : 'none'
+                padding: '12px 24px',
+                borderRadius: '30px',
+                border: activeCat === cat.id ? 'none' : '1px solid #ddd',
+                backgroundColor: activeCat === cat.id ? '#000' : '#fff', // 선택 시 검정, 미선택 시 흰색
+                color: activeCat === cat.id ? '#fff' : '#555',           // 선택 시 흰색, 미선택 시 회색
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                boxShadow: activeCat === cat.id ? '0 4px 10px rgba(0,0,0,0.2)' : 'none'
               }}
             >
               {cat.name}
@@ -69,35 +101,56 @@ export default function Product() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '100px' }}>Loading...</div>
+          <div style={{ textAlign: 'center', padding: '100px', fontSize: '18px', color: '#888' }}>Loading products...</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '40px' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+            gap: '50px 30px' 
+          }}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map(product => (
                 <div 
                   key={product.id} 
-                  onClick={() => navigate(`/product/${product.id}`)} // 클릭 시 상세 페이지 이동
-                  style={{ textAlign: 'center', cursor: 'pointer' }}
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  style={{ textAlign: 'center', cursor: 'pointer', group: 'true' }}
                 >
-                  <div style={{ border: '1px solid #f0f0f0', marginBottom: '20px', overflow: 'hidden' }}>
+                  <div style={{ 
+                    border: '1px solid #f0f0f0', 
+                    marginBottom: '20px', 
+                    overflow: 'hidden',
+                    backgroundColor: '#fdfdfd',
+                    borderRadius: '8px'
+                  }}>
                     <img 
                       src={product.image_url} 
                       alt={product.name} 
-                      style={{ width: '100%', height: '300px', objectFit: 'contain', transition: '0.3s' }} 
-                      onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                      style={{ 
+                        width: '100%', 
+                        height: '320px', 
+                        objectFit: 'contain', 
+                        transition: 'transform 0.5s ease',
+                        padding: '20px'
+                      }} 
+                      onMouseOver={e => e.currentTarget.style.transform = 'scale(1.08)'}
                       onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                     />
                   </div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 'bold' }}>{product.name}</h4>
-                  <p style={{ fontSize: '14px', color: '#777' }}>{product.description?.substring(0, 80)}...</p>
+                  <h4 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '10px', color: '#222' }}>{product.name}</h4>
+                  <p style={{ fontSize: '14px', color: '#777', lineHeight: '1.6', height: '44px', overflow: 'hidden' }}>
+                    {product.description?.replace(/<[^>]*>?/gm, '').substring(0, 60)}...
+                  </p>
                 </div>
               ))
             ) : (
-              <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px', color: '#999' }}>No products found.</p>
+              <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px', color: '#999', fontSize: '16px' }}>
+                No products found in this category.
+              </p>
             )}
           </div>
         )}
       </main>
+
       <Footer />
     </div>
   );
