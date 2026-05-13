@@ -57,7 +57,7 @@ export default function ProductAdd() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        alert('✅ 제품이 D1 DB와 R2 저장소에 성공적으로 등록되었습니다!');
+        alert('✅ 제품이 저장소에 성공적으로 등록되었습니다!');
         
         // 입력창 초기화
         setName('');
