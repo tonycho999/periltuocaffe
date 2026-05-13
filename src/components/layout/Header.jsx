@@ -20,7 +20,8 @@ export default function Header() {
       </div>
 
       <nav className="header-nav">
-        {/* 수정된 메뉴 구성 */}
+        {/* ✨ Home 메뉴 추가 */}
+        <Link to="/" className="nav-link">Home</Link>
         <Link to="/about" className="nav-link">About Us</Link>
         <Link to="/product" className="nav-link">Product</Link>
         <Link to="/services" className="nav-link">Services</Link>
