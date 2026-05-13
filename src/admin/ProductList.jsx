@@ -25,26 +25,30 @@ export default function ProductList() {
     fetchProducts();
   }, []);
 
-  // 🗑️ 제품 삭제 기능 (DB 삭제 + R2 이미지 삭제 요청)
+  // 🗑️ 제품 삭제 기능 (안전한 삭제 로직)
   const handleDelete = async (product) => {
-    if (!window.confirm(`[${product.name}] 제품을 삭제하시겠습니까?\n서버의 이미지 파일도 함께 삭제됩니다.`)) return;
+    if (!window.confirm(`[${product.name}] 제품을 삭제하시겠습니까?`)) return;
     
     try {
-      // 1. DB에서 제품 정보 삭제 (기존 로직)
+      // 1. DB에서 제품 정보 삭제 (이게 제일 중요합니다)
       const response = await fetch(`https://periltuocaffe-api.tonycho999.workers.dev/products/${product.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        // 2. R2에서도 이미지 파일 삭제 (추가 보완)
-        // 이미지 URL에서 파일명만 추출 (예: 17155...-image.jpg)
-        const fileName = product.image_url.split('/').pop();
-        
-        await fetch(`https://periltuocaffe-api.tonycho999.workers.dev/upload?file=${fileName}`, {
-          method: 'DELETE',
-        });
+        // 2. R2 이미지 파일 삭제 (이미 없으면 그냥 넘어갑니다)
+        try {
+          if (product.image_url) {
+            const fileName = product.image_url.split('/').pop();
+            await fetch(`https://periltuocaffe-api.tonycho999.workers.dev/upload?file=${fileName}`, {
+              method: 'DELETE',
+            });
+          }
+        } catch (imgErr) {
+          console.log("이미지는 서버에 없거나 이미 지워졌습니다.");
+        }
 
-        alert('🗑️ 제품과 이미지가 모두 삭제되었습니다.');
+        alert('🗑️ 삭제가 완료되었습니다.');
         fetchProducts(); // 목록 새로고침
       } else {
         throw new Error('삭제 실패');
@@ -98,7 +102,7 @@ export default function ProductList() {
               </div>
 
               <button 
-                onClick={() => handleDelete(product)} // 객체 전체를 전달하도록 수정
+                onClick={() => handleDelete(product)}
                 style={{ 
                   backgroundColor: '#fff', 
                   color: '#ff4d4f', 
