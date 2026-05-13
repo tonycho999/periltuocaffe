@@ -99,7 +99,6 @@ export default function ProductAdd() {
             onChange={(e) => setCategory(e.target.value)} 
             style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '15px' }}
           >
-            <option value="brand">브랜드별 리스트</option>
             <option value="semi-auto">반자동 커피머신</option>
             <option value="manual">수동 커피머신</option>
             <option value="auto">전자동 커피머신</option>
