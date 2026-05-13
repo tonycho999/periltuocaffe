@@ -1,116 +1,185 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-// 카테고리 정의 (이미지에 나온 메뉴 구조 참고)
-const CATEGORIES = [
-  { id: 'all', name: '전체' },
-  { id: 'brand', name: '브랜드별 리스트' },
-  { id: 'semi-auto', name: '반자동 커피머신' },
-  { id: 'manual', name: '수동 커피머신' },
-  { id: 'auto', name: '전자동 커피머신' },
-  { id: 'grinder', name: '그라인더' },
-  { id: 'blender', name: '블렌더·스무디머신' },
-  { id: 'coffee', name: '원두' }
-];
+export default function ProductAdd() {
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('semi-auto'); // 기본값 설정
+  const [description, setDescription] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
-export default function Product() {
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [activeCat, setActiveCat] = useState('all');
-  const [loading, setLoading] = useState(true);
+  // 📸 이미지 파일 선택 및 미리보기 로직
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // 1. 데이터 불러오기 (D1 DB와 연결된 Worker 호출)
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/products');
-        const data = await response.json();
-        setProducts(data);
-        setFilteredProducts(data);
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-      } finally {
-        setLoading(false);
+    // 용량 제한 (700KB)
+    if (file.size > 716800) {
+      alert('🚨 사진 용량이 너무 큽니다! 700KB 이하의 사진을 올려주세요.');
+      e.target.value = '';
+      return;
+    }
+
+    setImageFile(file);
+
+    // 브라우저 미리보기용 URL 생성
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 🔥 Cloudflare Worker로 데이터 전송
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!name || !description || !imageFile) {
+      return alert('제품 이름, 상세 설명, 사진을 모두 입력해주세요.');
+    }
+
+    setLoading(true);
+
+    // 텍스트와 파일을 동시에 보내기 위해 FormData 사용
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('description', description);
+    formData.append('image', imageFile);
+
+    try {
+      const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev', {
+        method: 'POST',
+        body: formData, // FormData 전송 시 Content-Type 헤더는 브라우저가 자동 설정함
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert('✅ 제품이 D1 DB와 R2 저장소에 성공적으로 등록되었습니다!');
+        
+        // 입력창 초기화
+        setName('');
+        setCategory('semi-auto');
+        setDescription('');
+        setImageFile(null);
+        setPreviewUrl('');
+        e.target.reset();
+      } else {
+        throw new Error(result.error || '등록 중 오류가 발생했습니다.');
       }
+    } catch (error) {
+      console.error("업로드 에러:", error);
+      alert('등록에 실패했습니다: ' + error.message);
+    } finally {
+      setLoading(false);
     }
-    fetchProducts();
-  }, []);
-
-  // 2. 카테고리 필터링 로직
-  useEffect(() => {
-    if (activeCat === 'all') {
-      setFilteredProducts(products);
-    } else {
-      setFilteredProducts(products.filter(p => p.category === activeCat));
-    }
-  }, [activeCat, products]);
-
-  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>로딩 중...</div>;
+  };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      {/* 타이틀 영역 */}
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: 'bold' }}>제품 종류</h2>
-        <p style={{ color: '#666' }}>Per il tuo caffe의 엄선된 라인업을 만나보세요.</p>
-      </div>
-
-      {/* 카테고리 메뉴 (이미지 레이아웃 참고) */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        borderTop: '1px solid #eee', 
-        borderBottom: '1px solid #eee',
-        marginBottom: '30px',
-        flexWrap: 'wrap'
-      }}>
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCat(cat.id)}
-            style={{
-              padding: '15px 20px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: activeCat === cat.id ? 'bold' : 'normal',
-              color: activeCat === cat.id ? '#0056b3' : '#333',
-              borderBottom: activeCat === cat.id ? '2px solid #0056b3' : 'none'
-            }}
+    <div style={{ 
+      maxWidth: '600px', 
+      margin: '40px auto', 
+      padding: '30px', 
+      backgroundColor: '#fff', 
+      borderRadius: '12px', 
+      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+      fontFamily: 'sans-serif'
+    }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>➕ 새 제품 등록</h2>
+      
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        
+        {/* 제품 분류 (제공해주신 이미지 기준) */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>제품 분류</label>
+          <select 
+            value={category} 
+            onChange={(e) => setCategory(e.target.value)} 
+            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '15px' }}
           >
-            {cat.name}
-          </button>
-        ))}
-      </div>
+            <option value="brand">브랜드별 리스트</option>
+            <option value="semi-auto">반자동 커피머신</option>
+            <option value="manual">수동 커피머신</option>
+            <option value="auto">전자동 커피머신</option>
+            <option value="grinder">그라인더</option>
+            <option value="blender">블렌더·스무디머신</option>
+            <option value="coffee">원두</option>
+          </select>
+        </div>
 
-      {/* 제품 리스트 영역 */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
-        gap: '30px' 
-      }}>
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map(product => (
-            <div key={product.id} style={{ textAlign: 'center', cursor: 'pointer' }}>
-              <div style={{ overflow: 'hidden', backgroundColor: '#f4f4f4', marginBottom: '15px' }}>
-                <img 
-                  src={product.image_url} 
-                  alt={product.name} 
-                  style={{ width: '100%', transition: '0.3s' }}
-                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                />
-              </div>
-              <h4 style={{ fontSize: '16px', margin: '10px 0' }}>{product.name}</h4>
-              <p style={{ fontSize: '13px', color: '#888' }}>{product.description.substring(0, 50)}...</p>
+        {/* 제품 이름 */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>제품 이름</label>
+          <input 
+            type="text" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            placeholder="예: SANREMO OPERA 오페라 2.0"
+            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        {/* 제품 상세 설명 */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>제품 상세 설명 (이미지 클릭 시 노출)</label>
+          <textarea 
+            rows="6"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="제품의 주요 기능, 제원 등을 입력하세요. (HTML 태그 사용 가능)"
+            style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', lineHeight: '1.6' }}
+          />
+        </div>
+
+        {/* 제품 사진 업로드 */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>제품 이미지 (700KB 이하 권장)</label>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleImageChange} 
+            style={{ 
+              width: '100%', 
+              padding: '10px', 
+              backgroundColor: '#f8f8f8', 
+              border: '1px dashed #aaa', 
+              borderRadius: '6px',
+              cursor: 'pointer' 
+            }}
+          />
+          {previewUrl && (
+            <div style={{ marginTop: '15px', textAlign: 'center' }}>
+              <p style={{ fontSize: '13px', color: '#28a745', marginBottom: '8px' }}>✓ 업로드할 이미지 미리보기</p>
+              <img 
+                src={previewUrl} 
+                alt="미리보기" 
+                style={{ maxWidth: '100%', height: '150px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #eee' }} 
+              />
             </div>
-          ))
-        ) : (
-          <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: '50px', color: '#999' }}>
-            해당 카테고리에 등록된 제품이 없습니다.
-          </p>
-        )}
-      </div>
+          )}
+        </div>
+
+        {/* 등록 버튼 */}
+        <button 
+          type="submit" 
+          disabled={loading}
+          style={{ 
+            marginTop: '10px',
+            padding: '15px', 
+            backgroundColor: loading ? '#ccc' : '#0056b3', 
+            color: '#fff', 
+            border: 'none', 
+            borderRadius: '6px', 
+            cursor: loading ? 'default' : 'pointer',
+            fontSize: '17px',
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
+          }}
+        >
+          {loading ? '데이터 전송 중...' : '제품 등록하기'}
+        </button>
+      </form>
     </div>
   );
 }
