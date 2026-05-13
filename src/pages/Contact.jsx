@@ -12,7 +12,7 @@ export default function Contact() {
         <div style={{ backgroundColor: '#f9f9f9', padding: '40px', borderRadius: '8px', display: 'inline-block', textAlign: 'left' }}>
           <p style={{ margin: '10px 0', fontSize: '18px' }}><strong>📞 Phone:</strong> 0949 823 0007</p>
           <p style={{ margin: '10px 0', fontSize: '18px' }}><strong>✉️ Email:</strong> periltuocaffe@gmail.com</p>
-          <p style={{ margin: '10px 0', fontSize: '18px' }}><strong>🏢 Business Hours:</strong> Mon-Fri 10:00 - 19:00 (Closed on Weekends/regular Holidays)</p>
+          <p style={{ margin: '10px 0', fontSize: '18px' }}><strong>🏢 Business Hours:</strong> 10:00 - 19:00 (Closed on regular Holidays)</p>
         </div>
       </main>
       <Footer />
