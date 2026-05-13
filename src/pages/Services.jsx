@@ -6,36 +6,26 @@ export default function Services() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchServiceData() {
-      try {
-        const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/settings');
-        const config = await response.json();
-        
+    fetch('https://periltuocaffe-api.tonycho999.workers.dev/settings')
+      .then(res => res.json())
+      .then(config => {
         if (config && config.service_data) {
-          // 데이터가 객체({content: '...'})면 content를 추출, 아니면 통째로 사용
-          const finalHtml = typeof config.service_data === 'object' ? config.service_data.content : config.service_data;
-          setContent(finalHtml);
+          const html = typeof config.service_data === 'object' ? config.service_data.content : config.service_data;
+          setContent(html);
         }
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchServiceData();
+      }).finally(() => setLoading(false));
   }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <main style={{ flex: '1', padding: '80px 20px', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '50px' }}>Our Services</h2>
-        
-        {loading ? (
-          <div style={{ textAlign: 'center' }}>Loading...</div>
-        ) : (
+      <main style={{ flex: '1', padding: '80px 20px', maxWidth: '1000px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '36px', fontWeight: 'bold', marginBottom: '60px', textTransform: 'uppercase' }}>
+          Our Services
+        </h2>
+        {loading ? <div style={{ textAlign: 'center' }}>Loading...</div> : (
           <div 
-            style={{ lineHeight: '1.8', fontSize: '18px' }}
-            dangerouslySetInnerHTML={{ __html: content }} 
+            style={{ lineHeight: '2.0', fontSize: '18px', color: '#333' }}
+            dangerouslySetInnerHTML={{ __html: content || "Service information will be updated soon." }} 
           />
         )}
       </main>
