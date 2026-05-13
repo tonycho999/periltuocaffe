@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Footer from '../components/layout/Footer';
 
-// Category definitions in English
 const CATEGORIES = [
   { id: 'all', name: 'All' },
   { id: 'brand', name: 'By Brand' },
@@ -19,7 +18,6 @@ export default function Product() {
   const [activeCat, setActiveCat] = useState('all');
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch data from Cloudflare D1
   useEffect(() => {
     async function fetchProducts() {
       try {
@@ -36,7 +34,6 @@ export default function Product() {
     fetchProducts();
   }, []);
 
-  // 2. Category filtering logic
   useEffect(() => {
     if (activeCat === 'all') {
       setFilteredProducts(products);
@@ -46,11 +43,14 @@ export default function Product() {
   }, [activeCat, products]);
 
   return (
+    /* 1. 최상위 div를 Flex 컨테이너로 만들고 최소 높이를 화면 전체(100vh)로 잡습니다. */
     <div style={{ 
       display: 'flex', 
       flexDirection: 'column', 
       minHeight: '100vh' 
     }}>
+      
+      {/* 2. main 영역에 flex: 1을 주어 남는 모든 공간을 차지하게 합니다. */}
       <main style={{ 
         flex: '1', 
         maxWidth: '1200px', 
@@ -59,13 +59,11 @@ export default function Product() {
         width: '100%',
         boxSizing: 'border-box'
       }}>
-        {/* Title Area */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h2 style={{ fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>Our Products</h2>
-          <p style={{ color: '#666', marginTop: '10px' }}>Discover our premium selection for the perfect coffee experience.</p>
+          <p style={{ color: '#666', marginTop: '10px' }}>Premium lineup for your coffee business.</p>
         </div>
 
-        {/* Category Menu */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -86,8 +84,7 @@ export default function Product() {
                 fontSize: '14px',
                 fontWeight: activeCat === cat.id ? 'bold' : 'normal',
                 color: activeCat === cat.id ? '#000' : '#888',
-                borderBottom: activeCat === cat.id ? '2px solid #000' : 'none',
-                transition: 'all 0.2s'
+                borderBottom: activeCat === cat.id ? '2px solid #000' : 'none'
               }}
             >
               {cat.name}
@@ -95,7 +92,6 @@ export default function Product() {
           ))}
         </div>
 
-        {/* Product List Grid */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '100px' }}>Loading...</div>
         ) : (
@@ -106,41 +102,24 @@ export default function Product() {
           }}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map(product => (
-                <div key={product.id} style={{ textAlign: 'center', cursor: 'pointer' }}>
-                  <div style={{ 
-                    overflow: 'hidden', 
-                    backgroundColor: '#fff', 
-                    marginBottom: '20px',
-                    border: '1px solid #f0f0f0' 
-                  }}>
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name} 
-                      style={{ 
-                        width: '100%', 
-                        height: '300px', 
-                        objectFit: 'contain', 
-                        transition: '0.4s' 
-                      }}
-                      onMouseOver={e => e.currentTarget.style.transform = 'scale(1.08)'}
-                      onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                    />
+                <div key={product.id} style={{ textAlign: 'center' }}>
+                  <div style={{ border: '1px solid #f0f0f0', marginBottom: '20px' }}>
+                    <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '300px', objectFit: 'contain' }} />
                   </div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 'bold', margin: '15px 0 5px' }}>{product.name}</h4>
-                  <p style={{ fontSize: '14px', color: '#777', lineHeight: '1.5' }}>
-                    {product.description?.substring(0, 80)}...
-                  </p>
+                  <h4 style={{ fontSize: '18px', fontWeight: 'bold' }}>{product.name}</h4>
+                  <p style={{ fontSize: '14px', color: '#777' }}>{product.description?.substring(0, 80)}...</p>
                 </div>
               ))
             ) : (
               <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px', color: '#999' }}>
-                No products found in this category.
+                No products found.
               </p>
             )}
           </div>
         )}
       </main>
 
+      {/* 3. 이제 main이 공간을 다 채워주므로 푸터는 항상 바닥에 있게 됩니다. */}
       <Footer />
     </div>
   );
