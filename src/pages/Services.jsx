@@ -2,62 +2,43 @@ import { useState, useEffect } from 'react';
 import Footer from '../components/layout/Footer';
 
 export default function Services() {
-  const [services, setServices] = useState([]);
+  const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchServices() {
+    async function fetchServiceData() {
       try {
         const response = await fetch('https://periltuocaffe-api.tonycho999.workers.dev/settings');
         const config = await response.json();
+        
         if (config && config.service_data) {
-          setServices(config.service_data);
+          // 데이터가 객체({content: '...'})면 content를 추출, 아니면 통째로 사용
+          const finalHtml = typeof config.service_data === 'object' ? config.service_data.content : config.service_data;
+          setContent(finalHtml);
         }
       } catch (error) {
-        console.error("서비스 데이터 로드 실패:", error);
+        console.error("데이터 로드 실패:", error);
       } finally {
         setLoading(false);
       }
     }
-    fetchServices();
+    fetchServiceData();
   }, []);
 
   return (
-    /* 1. 전체 컨테이너를 Flexbox로 설정하고 최소 높이를 100vh로 잡습니다. */
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      minHeight: '100vh' 
-    }}>
-      
-      {/* 2. 본문 영역에 flex: 1을 주어 남는 공간을 모두 차지하게 만듭니다. */}
-      <main style={{ 
-        flex: '1', 
-        padding: '80px 20px', 
-        maxWidth: '800px', 
-        margin: '0 auto',
-        width: '100%',
-        boxSizing: 'border-box'
-      }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '40px' }}>Our Services</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <main style={{ flex: '1', padding: '80px 20px', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '50px' }}>Our Services</h2>
         
         {loading ? (
-          <p style={{ textAlign: 'center' }}>로딩 중...</p>
+          <div style={{ textAlign: 'center' }}>Loading...</div>
         ) : (
-          services.map((item, index) => (
-            <div key={index} style={{ marginBottom: '40px' }}>
-              <h3 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>
-                {item.title}
-              </h3>
-              <p style={{ lineHeight: '1.6', color: '#555', marginTop: '10px', whiteSpace: 'pre-wrap' }}>
-                {item.description}
-              </p>
-            </div>
-          ))
+          <div 
+            style={{ lineHeight: '1.8', fontSize: '18px' }}
+            dangerouslySetInnerHTML={{ __html: content }} 
+          />
         )}
       </main>
-
-      {/* 3. 이제 푸터는 본문이 짧아도 무조건 화면 바닥으로 밀려납니다. */}
       <Footer />
     </div>
   );
